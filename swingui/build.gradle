@@ -1,0 +1,14 @@
+plugins {
+    id "java"
+    id "base.java"
+    id "base.checkstyle"
+    id "configuration.include"
+    id "project.default_libs"
+    id "extra.fill_build_constants"
+    id "net.raphimc.class-token-replacer" version "1.1.5"
+}
+
+dependencies {
+    include project(":core")
+    include "net.lenni0451.commons:swing:1.7.1"
+}

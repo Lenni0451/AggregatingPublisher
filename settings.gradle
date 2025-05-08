@@ -18,6 +18,7 @@ if (!new File("build_config", "build.gradle").exists()) {
 }
 includeBuild("build_config")
 
-rootProject.name = "GradleTemplate"
+rootProject.name = "AggregatingPublisher"
 
-//include(":subproject")
+include(":core")
+include(":swingui")
