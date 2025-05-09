@@ -11,4 +11,6 @@ plugins {
 dependencies {
     include project(":core")
     include "net.lenni0451.commons:swing:1.7.1"
+    include "net.lenni0451.commons:gson:1.7.1"
+    include "com.google.code.gson:gson:2.13.1"
 }

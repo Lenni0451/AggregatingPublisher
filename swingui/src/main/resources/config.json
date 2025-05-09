@@ -1,0 +1,21 @@
+{
+    "bindAddress": "0.0.0.0",
+    "bindPort": 8080,
+    "aggregators": [
+        {
+            "type": "maven"
+        }
+    ],
+    "publishers": [
+        {
+            "type": "maven",
+            "name": "My Maven Publisher",
+            "url": "https://example.com/repo",
+            "authentication": {
+                "type": "basic",
+                "username": "example",
+                "password": "example"
+            }
+        }
+    ]
+}
