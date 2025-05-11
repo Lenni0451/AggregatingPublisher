@@ -2,6 +2,7 @@ package net.lenni0451.aggregatingpublisher.utils;
 
 import net.lenni0451.aggregatingpublisher.auth.Authentication;
 import net.lenni0451.commons.httpclient.HttpClient;
+import net.lenni0451.commons.httpclient.HttpResponse;
 import net.lenni0451.commons.httpclient.content.HttpContent;
 import net.lenni0451.commons.httpclient.requests.HttpRequest;
 import net.lenni0451.commons.httpclient.requests.impl.GetRequest;
@@ -27,8 +28,20 @@ public class HttpUtils {
         HttpRequest request = new PutRequest(url).setContent(HttpContent.bytes(data));
         if (authentication != null) authentication.apply(request);
         HTTP_CLIENT.execute(request, httpResponse -> {
-            if (httpResponse.getStatusCode() / 100 != 2) throw new IOException("Failed to upload file: " + httpResponse.getStatusCode() + " " + httpResponse.getStatusMessage());
+            if (httpResponse.getStatusCode() / 100 != 2) {
+                throw new IOException("Failed to upload file: " + httpResponse.getStatusCode() + " " + httpResponse.getStatusMessage());
+            }
             return null;
+        });
+    }
+
+    public static HttpResponse execute(final HttpRequest request, @Nullable final Authentication authentication) throws IOException {
+        if (authentication != null) authentication.apply(request);
+        return HTTP_CLIENT.execute(request, httpResponse -> {
+            if (httpResponse.getStatusCode() / 100 != 2) {
+                throw new IOException("Failed to execute request: " + httpResponse.getStatusCode() + " " + httpResponse.getStatusMessage());
+            }
+            return httpResponse;
         });
     }
 

@@ -7,7 +7,7 @@ public record TokenAuth(String token) implements Authentication {
 
     @Override
     public void apply(HeaderStore<?> headers) {
-        headers.setHeader(HttpHeaders.AUTHORIZATION, "Baerer " + this.token);
+        headers.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + this.token);
     }
 
 }

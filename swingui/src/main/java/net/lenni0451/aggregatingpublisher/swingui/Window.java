@@ -56,7 +56,7 @@ public class Window extends JFrame {
     private void init() {
         JSplitPane root = new JSplitPane();
         root.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
-        root.setResizeWeight(0.75);
+        root.setResizeWeight(0.6);
         this.setContentPane(root);
 
         JScrollPane left = new JScrollPane();

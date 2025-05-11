@@ -7,6 +7,7 @@ import net.lenni0451.aggregatingpublisher.auth.Authentication;
 import net.lenni0451.aggregatingpublisher.auth.BasicAuth;
 import net.lenni0451.aggregatingpublisher.auth.TokenAuth;
 import net.lenni0451.aggregatingpublisher.publisher.maven.MavenPublisher;
+import net.lenni0451.aggregatingpublisher.publisher.sonatype.SonatypePublisher;
 import net.lenni0451.commons.gson.GsonParser;
 import net.lenni0451.commons.gson.elements.GsonArray;
 import net.lenni0451.commons.gson.elements.GsonElement;
@@ -79,11 +80,15 @@ public class Main {
             GsonObject publisher = rawPublisher.asObject();
             String type = Objects.requireNonNull(publisher.getString("type"), "Publisher type is missing");
             String name = Objects.requireNonNull(publisher.getString("name"), "Publisher name is missing");
-            GsonObject authentication = publisher.getObject("authentication", new GsonObject());
+            GsonObject authentication = publisher.getObject("authentication");
             if ("maven".equalsIgnoreCase(type)) {
                 String url = Objects.requireNonNull(publisher.getString("url"), "Publisher URL is missing");
                 aggregatingPublisher.registerPublisher(new MavenPublisher(name, url, parseAuthentication(authentication)));
                 log.info("Registered Maven publisher: {}", name);
+            } else if ("sonatype".equalsIgnoreCase(type)) {
+                Authentication auth = Objects.requireNonNull(parseAuthentication(authentication), "Sonatype publisher authentication is missing");
+                aggregatingPublisher.registerPublisher(new SonatypePublisher(name, auth));
+                log.info("Registered Sonatype publisher: {}", name);
             } else {
                 throw new IllegalArgumentException("Unknown publisher type: " + type);
             }
