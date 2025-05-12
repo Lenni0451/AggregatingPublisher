@@ -46,7 +46,7 @@ public class MavenPublisher implements PublisherService {
                 String mavenMetadataSha256 = mavenMetadata + ".sha256";
                 String mavenMetadataSha512 = mavenMetadata + ".sha512";
 
-                String onlineMetadata = requestOnlineMetadata(mavenMetadata);
+                String onlineMetadata = this.requestOnlineMetadata(mavenMetadata);
                 if (onlineMetadata != null) {
                     log.info("Merging {} with online metadata", mavenMetadata);
                     String mergedMetadata = MavenMetadataMerger.merge(onlineMetadata, new String(entry.getValue(), StandardCharsets.UTF_8));

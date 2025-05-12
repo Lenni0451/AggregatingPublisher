@@ -78,7 +78,7 @@ public class Window extends JFrame {
                     button.addActionListener(e -> {
                         if (Main.fileCollector.isEmpty()) return;
                         button.setEnabled(false);
-                        executorService.execute(() -> {
+                        this.executorService.execute(() -> {
                             try {
                                 publisherService.publish(Main.fileCollector.getFiles());
                             } catch (Throwable t) {
