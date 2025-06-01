@@ -10,7 +10,9 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 public class MavenPublisher implements PublisherService {
@@ -38,29 +40,34 @@ public class MavenPublisher implements PublisherService {
     public void publish(Map<String, byte[]> deployment) throws IOException {
         log.info("Publishing {} files to {}", deployment.size(), this.url);
         Map<String, byte[]> files = new HashMap<>();
+        Set<String> snapshotMetadata = new HashSet<>();
         for (Map.Entry<String, byte[]> entry : deployment.entrySet()) {
             if (entry.getKey().endsWith("/maven-metadata.xml")) {
-                String mavenMetadata = entry.getKey();
-                String mavenMetadataMd5 = mavenMetadata + ".md5";
-                String mavenMetadataSha1 = mavenMetadata + ".sha1";
-                String mavenMetadataSha256 = mavenMetadata + ".sha256";
-                String mavenMetadataSha512 = mavenMetadata + ".sha512";
-
-                String onlineMetadata = this.requestOnlineMetadata(mavenMetadata);
+                String mavenMetadataPath = entry.getKey();
+                String onlineMetadata = this.requestOnlineMetadata(mavenMetadataPath);
                 if (onlineMetadata != null) {
-                    log.info("Merging {} with online metadata", mavenMetadata);
-                    String mergedMetadata = MavenMetadataMerger.merge(onlineMetadata, new String(entry.getValue(), StandardCharsets.UTF_8));
-                    byte[] metadataBytes = mergedMetadata.getBytes(StandardCharsets.UTF_8);
-                    files.put(mavenMetadata, metadataBytes);
-                    files.put(mavenMetadataMd5, HashUtils.md5(metadataBytes).getBytes(StandardCharsets.UTF_8));
-                    files.put(mavenMetadataSha1, HashUtils.sha1(metadataBytes).getBytes(StandardCharsets.UTF_8));
-                    files.put(mavenMetadataSha256, HashUtils.sha256(metadataBytes).getBytes(StandardCharsets.UTF_8));
-                    files.put(mavenMetadataSha512, HashUtils.sha512(metadataBytes).getBytes(StandardCharsets.UTF_8));
+                    log.info("Merging {} with online metadata", mavenMetadataPath);
+                    String metadata = new String(entry.getValue(), StandardCharsets.UTF_8);
+                    if (metadata.contains("snapshotVersions")) {
+                        //Crude check if the metadata is for a snapshot version to quickly filter out non-snapshot metadata
+                        //A more robust check is implemented in the MavenSnapshotIncrementer
+                        snapshotMetadata.add(mavenMetadataPath);
+                    }
+                    String mergedMetadata = MavenMetadataMerger.merge(onlineMetadata, metadata);
+                    this.updateMetadata(files, mavenMetadataPath, mergedMetadata);
                 } else {
-                    files.put(mavenMetadata, entry.getValue());
+                    files.put(mavenMetadataPath, entry.getValue());
                 }
             } else if (!files.containsKey(entry.getKey())) {
                 files.put(entry.getKey(), entry.getValue());
+            }
+        }
+        for (String metadataPath : snapshotMetadata) {
+            log.info("Incrementing snapshot version for {}", metadataPath);
+            String metadata = new String(files.get(metadataPath), StandardCharsets.UTF_8);
+            String incrementedMetadata = MavenSnapshotIncrementer.incrementSnapshotVersion(metadataPath, metadata, files);
+            if (incrementedMetadata != null) {
+                this.updateMetadata(files, metadataPath, incrementedMetadata);
             }
         }
         for (Map.Entry<String, byte[]> entry : files.entrySet()) {
@@ -76,6 +83,15 @@ public class MavenPublisher implements PublisherService {
         byte[] response = HttpUtils.get(this.url + (this.url.endsWith("/") ? "" : "/") + path, this.authentication);
         if (response == null) return null;
         return new String(response, StandardCharsets.UTF_8);
+    }
+
+    private void updateMetadata(final Map<String, byte[]> files, final String metadataPath, final String metadata) {
+        byte[] incrementedMetadataByte = metadata.getBytes(StandardCharsets.UTF_8);
+        files.put(metadataPath, incrementedMetadataByte);
+        files.put(metadataPath + ".md5", HashUtils.md5(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
+        files.put(metadataPath + ".sha1", HashUtils.sha1(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
+        files.put(metadataPath + ".sha256", HashUtils.sha256(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
+        files.put(metadataPath + ".sha512", HashUtils.sha512(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
     }
 
 }
