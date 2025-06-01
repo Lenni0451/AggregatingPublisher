@@ -93,9 +93,10 @@ public class Window extends JFrame {
             }
             GBC.fillVerticalSpace(buttonPanel);
         });
-        GBC.create(right).nextRow().insets(5).fill(GBC.HORIZONTAL).weightx(1).add(new JButton("Clear"), button -> {
+        GBC.create(right).nextRow().insets(5).fill(GBC.HORIZONTAL).weightx(1).add(new JButton("Clear and close"), button -> {
             button.addActionListener(e -> {
                 Main.fileCollector.clearFiles();
+                this.dispose();
             });
         });
     }
