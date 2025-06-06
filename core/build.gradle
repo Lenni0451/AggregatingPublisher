@@ -1,14 +1,10 @@
 plugins {
     id "java"
-    id "base.java"
-    id "base.checkstyle"
-    id "configuration.include"
-    id "project.default_libs"
-    id "extra.fill_build_constants"
-    id "net.raphimc.class-token-replacer" version "1.1.6"
+    id "project.defaults"
+    alias libs.plugins.classTokenReplacer
 }
 
 dependencies {
-    include "org.apache.logging.log4j:log4j-slf4j2-impl:2.24.3"
-    include "net.lenni0451.commons:httpclient:1.7.1"
+    include libs.log4j
+    include libs.commons.httpclient
 }
