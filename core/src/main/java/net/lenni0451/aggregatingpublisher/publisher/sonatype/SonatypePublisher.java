@@ -13,6 +13,7 @@ import net.lenni0451.commons.httpclient.requests.impl.PostRequest;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -41,12 +42,33 @@ public class SonatypePublisher implements PublisherService {
             }
         }
 
+        String bundleName = this.getCommonPrefix(deployment.keySet());
+        if (bundleName.isEmpty()) {
+            bundleName = "bundle.zip";
+        } else {
+            bundleName = bundleName.substring(bundleName.lastIndexOf('/') + 1);
+        }
+        log.info("Using bundle name: {}", bundleName);
+
         MultiPartFormContent content = new MultiPartFormContent();
-        content.addPart("bundle", HttpContent.bytes(baos.toByteArray()), "bundle.zip");
+        content.addPart("bundle", HttpContent.bytes(baos.toByteArray()), bundleName);
         PostRequest request = new PostRequest(API_URL);
         request.setContent(content);
         HttpResponse response = HttpUtils.execute(request, this.authentication);
         log.info("Uploaded bundle to Sonatype: {}", response.getContentAsString());
+    }
+
+    private String getCommonPrefix(final Set<String> paths) {
+        if (paths.isEmpty()) return "";
+        String commonPrefix = paths.iterator().next();
+        for (String path : paths) {
+            while (!path.startsWith(commonPrefix)) {
+                int lastSlash = commonPrefix.lastIndexOf('/');
+                if (lastSlash < 0) return "";
+                commonPrefix = commonPrefix.substring(0, lastSlash);
+            }
+        }
+        return commonPrefix;
     }
 
 }
