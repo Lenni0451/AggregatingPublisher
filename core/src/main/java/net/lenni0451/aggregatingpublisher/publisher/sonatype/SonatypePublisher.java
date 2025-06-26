@@ -5,8 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.lenni0451.aggregatingpublisher.auth.Authentication;
 import net.lenni0451.aggregatingpublisher.services.PublisherService;
 import net.lenni0451.aggregatingpublisher.utils.HttpUtils;
+import net.lenni0451.aggregatingpublisher.utils.ProgressConsumer;
+import net.lenni0451.aggregatingpublisher.utils.ProgressingByteArrayInputStream;
 import net.lenni0451.commons.httpclient.HttpResponse;
 import net.lenni0451.commons.httpclient.content.HttpContent;
+import net.lenni0451.commons.httpclient.content.StreamedHttpContent;
 import net.lenni0451.commons.httpclient.content.impl.MultiPartFormContent;
 import net.lenni0451.commons.httpclient.requests.impl.PostRequest;
 
@@ -32,7 +35,7 @@ public class SonatypePublisher implements PublisherService {
     }
 
     @Override
-    public void publish(Map<String, byte[]> deployment) throws IOException {
+    public void publish(Map<String, byte[]> deployment, ProgressConsumer progressConsumer) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
             for (Map.Entry<String, byte[]> entry : deployment.entrySet()) {
@@ -50,10 +53,11 @@ public class SonatypePublisher implements PublisherService {
         }
         log.info("Using bundle name: {}", bundleName);
 
-        MultiPartFormContent content = new MultiPartFormContent();
-        content.addPart("bundle", HttpContent.bytes(baos.toByteArray()), bundleName);
+        MultiPartFormContent multiPartFormContent = new MultiPartFormContent();
+        multiPartFormContent.addPart("bundle", HttpContent.bytes(baos.toByteArray()), bundleName);
+        ProgressingByteArrayInputStream in = new ProgressingByteArrayInputStream(progressConsumer, multiPartFormContent.getAsBytes());
         PostRequest request = new PostRequest(API_URL);
-        request.setContent(content);
+        request.setContent(new StreamedHttpContent(multiPartFormContent.getContentType(), in, in.available()));
         HttpResponse response = HttpUtils.execute(request, this.authentication);
         log.info("Uploaded bundle to Sonatype: {}", response.getContentAsString());
     }

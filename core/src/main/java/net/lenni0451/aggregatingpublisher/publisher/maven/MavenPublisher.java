@@ -5,6 +5,7 @@ import net.lenni0451.aggregatingpublisher.auth.Authentication;
 import net.lenni0451.aggregatingpublisher.services.PublisherService;
 import net.lenni0451.aggregatingpublisher.utils.HashUtils;
 import net.lenni0451.aggregatingpublisher.utils.HttpUtils;
+import net.lenni0451.aggregatingpublisher.utils.ProgressConsumer;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class MavenPublisher implements PublisherService {
     }
 
     @Override
-    public void publish(Map<String, byte[]> deployment) throws IOException {
+    public void publish(Map<String, byte[]> deployment, ProgressConsumer progressConsumer) throws IOException {
         log.info("Publishing {} files to {}", deployment.size(), this.url);
         Map<String, byte[]> files = new HashMap<>();
         Set<String> snapshotMetadata = new HashSet<>();
@@ -70,10 +71,12 @@ public class MavenPublisher implements PublisherService {
                 this.updateMetadata(files, metadataPath, incrementedMetadata);
             }
         }
+        int uploaded = 0;
         for (Map.Entry<String, byte[]> entry : files.entrySet()) {
             String url = this.url + (this.url.endsWith("/") ? "" : "/") + entry.getKey();
             log.info("Uploading file: {} to {}", entry.getKey(), url);
             HttpUtils.put(url, entry.getValue(), this.authentication);
+            progressConsumer.accept(1F / files.size() * ++uploaded);
         }
         log.info("Published {} files to {}", files.size(), this.url);
     }

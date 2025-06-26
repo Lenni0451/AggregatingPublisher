@@ -77,14 +77,20 @@ public class Window extends JFrame {
                 GBC.create(buttonPanel).nextRow().insets(5, 5, 0, 5).fill(GBC.HORIZONTAL).weightx(1).add(new JButton(publisherService.getName()), button -> {
                     button.addActionListener(e -> {
                         if (Main.fileCollector.isEmpty()) return;
+                        String originalText = button.getText();
                         button.setEnabled(false);
                         this.executorService.execute(() -> {
                             try {
-                                publisherService.publish(Main.fileCollector.getFiles());
+                                publisherService.publish(Main.fileCollector.getFiles(), progress -> {
+                                    SwingUtilities.invokeLater(() -> {
+                                        button.setText(String.format("%.1f%%", progress * 100));
+                                    });
+                                });
                             } catch (Throwable t) {
                                 log.error("An error occurred while publishing files to {}", publisherService.getName(), t);
                                 Popup.showException("An error occurred while publishing files to " + publisherService.getName(), t);
                             } finally {
+                                button.setText(originalText);
                                 button.setEnabled(true);
                             }
                         });
