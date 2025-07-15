@@ -81,9 +81,13 @@ public class Window extends JFrame {
                         button.setEnabled(false);
                         this.executorService.execute(() -> {
                             try {
-                                publisherService.publish(Main.fileCollector.getFiles(), progress -> {
+                                publisherService.publish(Main.fileCollector.getFiles(), (progress, step, totalSteps) -> {
                                     SwingUtilities.invokeLater(() -> {
-                                        button.setText(String.format("%.1f%%", progress * 100));
+                                        if (totalSteps == 1) {
+                                            button.setText(String.format("%.1f%%", progress * 100));
+                                        } else {
+                                            button.setText(String.format("%.1f%% %s/%s", progress * 100, step, totalSteps));
+                                        }
                                     });
                                 });
                             } catch (Throwable t) {

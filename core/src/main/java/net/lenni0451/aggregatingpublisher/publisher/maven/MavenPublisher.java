@@ -42,41 +42,51 @@ public class MavenPublisher implements PublisherService {
         log.info("Publishing {} files to {}", deployment.size(), this.url);
         Map<String, byte[]> files = new HashMap<>();
         Set<String> snapshotMetadata = new HashSet<>();
-        for (Map.Entry<String, byte[]> entry : deployment.entrySet()) {
-            if (entry.getKey().endsWith("/maven-metadata.xml")) {
-                String mavenMetadataPath = entry.getKey();
-                String onlineMetadata = this.requestOnlineMetadata(mavenMetadataPath);
-                if (onlineMetadata != null) {
-                    log.info("Merging {} with online metadata", mavenMetadataPath);
-                    String metadata = new String(entry.getValue(), StandardCharsets.UTF_8);
-                    if (metadata.contains("snapshotVersions")) {
-                        //Crude check if the metadata is for a snapshot version to quickly filter out non-snapshot metadata
-                        //A more robust check is implemented in the MavenSnapshotIncrementer
-                        snapshotMetadata.add(mavenMetadataPath);
+        { //Check files and merge metadata with online metadata
+            int processed = 0;
+            for (Map.Entry<String, byte[]> entry : deployment.entrySet()) {
+                if (entry.getKey().endsWith("/maven-metadata.xml")) {
+                    String mavenMetadataPath = entry.getKey();
+                    String onlineMetadata = this.requestOnlineMetadata(mavenMetadataPath);
+                    if (onlineMetadata != null) {
+                        log.info("Merging {} with online metadata", mavenMetadataPath);
+                        String metadata = new String(entry.getValue(), StandardCharsets.UTF_8);
+                        if (metadata.contains("snapshotVersions")) {
+                            //Crude check if the metadata is for a snapshot version to quickly filter out non-snapshot metadata
+                            //A more robust check is implemented in the MavenSnapshotIncrementer
+                            snapshotMetadata.add(mavenMetadataPath);
+                        }
+                        String mergedMetadata = MavenMetadataMerger.merge(onlineMetadata, metadata);
+                        this.updateMetadata(files, mavenMetadataPath, mergedMetadata);
+                    } else {
+                        files.put(mavenMetadataPath, entry.getValue());
                     }
-                    String mergedMetadata = MavenMetadataMerger.merge(onlineMetadata, metadata);
-                    this.updateMetadata(files, mavenMetadataPath, mergedMetadata);
-                } else {
-                    files.put(mavenMetadataPath, entry.getValue());
+                } else if (!files.containsKey(entry.getKey())) {
+                    files.put(entry.getKey(), entry.getValue());
                 }
-            } else if (!files.containsKey(entry.getKey())) {
-                files.put(entry.getKey(), entry.getValue());
+                progressConsumer.accept(1F / deployment.size() * ++processed, 1, 3);
             }
         }
-        for (String metadataPath : snapshotMetadata) {
-            log.info("Incrementing snapshot version for {}", metadataPath);
-            String metadata = new String(files.get(metadataPath), StandardCharsets.UTF_8);
-            String incrementedMetadata = MavenSnapshotIncrementer.incrementSnapshotVersion(metadataPath, metadata, files);
-            if (incrementedMetadata != null) {
-                this.updateMetadata(files, metadataPath, incrementedMetadata);
+        { //Increment snapshot versions if necessary
+            int updated = 0;
+            for (String metadataPath : snapshotMetadata) {
+                log.info("Incrementing snapshot version for {}", metadataPath);
+                String metadata = new String(files.get(metadataPath), StandardCharsets.UTF_8);
+                String incrementedMetadata = MavenSnapshotIncrementer.incrementSnapshotVersion(metadataPath, metadata, files);
+                if (incrementedMetadata != null) {
+                    this.updateMetadata(files, metadataPath, incrementedMetadata);
+                }
+                progressConsumer.accept(1F / snapshotMetadata.size() * ++updated, 2, 3);
             }
         }
-        int uploaded = 0;
-        for (Map.Entry<String, byte[]> entry : files.entrySet()) {
-            String url = this.url + (this.url.endsWith("/") ? "" : "/") + entry.getKey();
-            log.info("Uploading file: {} to {}", entry.getKey(), url);
-            HttpUtils.put(url, entry.getValue(), this.authentication);
-            progressConsumer.accept(1F / files.size() * ++uploaded);
+        {
+            int uploaded = 0;
+            for (Map.Entry<String, byte[]> entry : files.entrySet()) {
+                String url = this.url + (this.url.endsWith("/") ? "" : "/") + entry.getKey();
+                log.info("Uploading file: {} to {}", entry.getKey(), url);
+                HttpUtils.put(url, entry.getValue(), this.authentication);
+                progressConsumer.accept(1F / files.size() * ++uploaded, 3, 3);
+            }
         }
         log.info("Published {} files to {}", files.size(), this.url);
     }
