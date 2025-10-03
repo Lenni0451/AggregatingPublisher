@@ -13,7 +13,10 @@ import java.io.IOException;
 
 public class HttpUtils {
 
-    private static final HttpClient HTTP_CLIENT = new HttpClient();
+    private static final int TIMEOUT = 60_000;
+    private static final HttpClient HTTP_CLIENT = new HttpClient()
+            .setReadTimeout(TIMEOUT)
+            .setConnectTimeout(TIMEOUT);
 
     public static byte[] get(final String url, @Nullable final Authentication authentication) throws IOException {
         HttpRequest request = new GetRequest(url);
