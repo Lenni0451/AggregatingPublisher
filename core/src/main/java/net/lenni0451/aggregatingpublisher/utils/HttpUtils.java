@@ -23,7 +23,7 @@ public class HttpUtils {
         if (authentication != null) authentication.apply(request);
         return HTTP_CLIENT.execute(request, httpResponse -> {
             if (httpResponse.getStatusCode() / 100 != 2) return null;
-            return httpResponse.getContent();
+            return httpResponse.getContent().getAsBytes();
         });
     }
 

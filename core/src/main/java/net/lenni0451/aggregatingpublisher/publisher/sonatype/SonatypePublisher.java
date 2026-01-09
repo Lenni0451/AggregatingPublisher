@@ -9,7 +9,6 @@ import net.lenni0451.aggregatingpublisher.utils.ProgressConsumer;
 import net.lenni0451.aggregatingpublisher.utils.ProgressingByteArrayInputStream;
 import net.lenni0451.commons.httpclient.HttpResponse;
 import net.lenni0451.commons.httpclient.content.HttpContent;
-import net.lenni0451.commons.httpclient.content.StreamedHttpContent;
 import net.lenni0451.commons.httpclient.content.impl.MultiPartFormContent;
 import net.lenni0451.commons.httpclient.requests.impl.PostRequest;
 
@@ -57,9 +56,9 @@ public class SonatypePublisher implements PublisherService {
         multiPartFormContent.addPart("bundle", HttpContent.bytes(baos.toByteArray()), bundleName);
         ProgressingByteArrayInputStream in = new ProgressingByteArrayInputStream(progressConsumer, multiPartFormContent.getAsBytes());
         PostRequest request = new PostRequest(API_URL);
-        request.setContent(new StreamedHttpContent(multiPartFormContent.getContentType(), in, in.available()));
+        request.setContent(HttpContent.inputStream(multiPartFormContent.getType(), in, in.available()));
         HttpResponse response = HttpUtils.execute(request, this.authentication);
-        log.info("Uploaded bundle to Sonatype: {}", response.getContentAsString());
+        log.info("Uploaded bundle to Sonatype: {}", response.getContent().getAsString());
     }
 
     private String getCommonPrefix(final Set<String> paths) {
