@@ -3,6 +3,7 @@ package net.lenni0451.aggregatingpublisher;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.lenni0451.aggregatingpublisher.services.AggregatorService;
+import net.lenni0451.aggregatingpublisher.services.AuthenticationService;
 import net.lenni0451.aggregatingpublisher.services.DeploymentManagerService;
 import net.lenni0451.aggregatingpublisher.services.PublisherService;
 import net.lenni0451.aggregatingpublisher.web.WebServer;
@@ -11,32 +12,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 
 @Slf4j
 public class AggregatingPublisher {
 
     @Getter
     private final WebServer webServer;
-    private final List<AggregatorService> aggregatorServices;
-    private final List<PublisherService> publisherServices;
-    private final List<DeploymentManagerService> deploymentManagerServices;
+    private final List<AggregatorService> aggregatorServices = new ArrayList<>();
+    private final List<PublisherService> publisherServices = new ArrayList<>();
+    private final List<DeploymentManagerService> deploymentManagerServices = new ArrayList<>();
+    private final List<AuthenticationService> authenticationServices = new ArrayList<>();
     private boolean started = false;
-    private Predicate<String> authenticator = authHeader -> true;
 
     public AggregatingPublisher(final String bindAddress, final int bindPort) throws IOException {
         this.webServer = new WebServer(bindAddress, bindPort);
-        this.aggregatorServices = new ArrayList<>();
-        this.publisherServices = new ArrayList<>();
-        this.deploymentManagerServices = new ArrayList<>();
-    }
-
-    public void setAuthenticator(final Predicate<String> authenticator) {
-        this.authenticator = authenticator;
-    }
-
-    public boolean checkAuth(final String authHeader) {
-        return this.authenticator.test(authHeader);
     }
 
     public AggregatingPublisher registerAggregator(final AggregatorService service) {
@@ -48,6 +37,7 @@ public class AggregatingPublisher {
     }
 
     public AggregatingPublisher registerPublisher(final PublisherService service) {
+        if (this.started) throw new IllegalStateException("Cannot register publisher service after starting");
         service.load(this);
         this.publisherServices.add(service);
         return this;
@@ -60,8 +50,16 @@ public class AggregatingPublisher {
         return this;
     }
 
+    public AggregatingPublisher registerAuthentication(final AuthenticationService service) {
+        if (this.started) throw new IllegalStateException("Cannot register authentication service after starting");
+        service.load(this);
+        this.authenticationServices.add(service);
+        return this;
+    }
+
     public void start() {
         if (this.aggregatorServices.isEmpty()) throw new IllegalStateException("No aggregator services registered");
+        if (this.publisherServices.isEmpty()) throw new IllegalStateException("No publisher services registered");
         if (this.deploymentManagerServices.isEmpty()) throw new IllegalStateException("No deployment manager services registered");
         this.webServer.start();
         this.started = true;
@@ -77,6 +75,10 @@ public class AggregatingPublisher {
 
     public List<DeploymentManagerService> getDeploymentManagerServices() {
         return Collections.unmodifiableList(this.deploymentManagerServices);
+    }
+
+    public List<AuthenticationService> getAuthenticationServices() {
+        return Collections.unmodifiableList(this.authenticationServices);
     }
 
     public void aggregateFile(final String name, final byte[] data) {

@@ -1,3 +1,0 @@
-[19:15:53] [main/INFO] (net.lenni0451.aggregatingpublisher.utils.ConfigUtils) Registered Maven aggregator
-[19:15:53] [main/INFO] (net.lenni0451.aggregatingpublisher.utils.ConfigUtils) Registered Maven publisher: My Maven Publisher
-[19:15:53] [main/INFO] (net.lenni0451.aggregatingpublisher.webui.WebMain) Aggregating Publisher Web UI started on port 8080

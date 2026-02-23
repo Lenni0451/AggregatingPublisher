@@ -2,11 +2,13 @@ package net.lenni0451.aggregatingpublisher.aggregator.maven;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.lenni0451.aggregatingpublisher.services.AuthenticationService;
 import net.lenni0451.aggregatingpublisher.web.RequestHandler;
 import net.lenni0451.aggregatingpublisher.web.RequestInfo;
 import net.lenni0451.aggregatingpublisher.web.ResponseInfo;
 
 import java.io.InputStream;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -22,8 +24,8 @@ public class MavenRequestHandler extends RequestHandler {
         path = path.substring(path.indexOf("/") + 1); //Cut off /maven/
 
         if (request.method().equalsIgnoreCase("PUT")) {
-            String auth = request.headers().containsKey("Authorization") ? request.headers().get("Authorization").get(0) : null;
-            if (!this.aggregator.getAggregatingPublisher().checkAuth(auth)) {
+            String authHeader = request.headers().containsKey("Authorization") ? request.headers().get("Authorization").get(0) : null;
+            if (!this.isAuthenticated(authHeader)) {
                 return ResponseInfo.of(401, "Unauthorized");
             }
 
@@ -47,6 +49,18 @@ public class MavenRequestHandler extends RequestHandler {
         } else {
             return ResponseInfo.methodNotAllowed();
         }
+    }
+
+    private boolean isAuthenticated(final String authHeader) {
+        List<AuthenticationService> authenticationServices = this.aggregator.getAggregatingPublisher().getAuthenticationServices();
+        if (authenticationServices.isEmpty()) return true;
+
+        for (AuthenticationService service : authenticationServices) {
+            if (service.verify(authHeader)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

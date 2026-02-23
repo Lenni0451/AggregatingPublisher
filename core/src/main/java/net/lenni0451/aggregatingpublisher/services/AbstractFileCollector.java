@@ -7,26 +7,26 @@ public abstract class AbstractFileCollector implements DeploymentManagerService 
 
     protected final Map<String, byte[]> files = new ConcurrentHashMap<>();
 
-    public Map<String, byte[]> getFiles() {
+    public final Map<String, byte[]> getFiles() {
         return Map.copyOf(this.files);
     }
 
-    public boolean isEmpty() {
+    public final boolean isEmpty() {
         return this.files.isEmpty();
     }
 
-    public void clearFiles() {
+    public final void clearFiles() {
         this.files.clear();
         this.onClear();
     }
 
     @Override
-    public void aggregateFile(String path, byte[] file) {
+    public final void aggregateFile(String path, byte[] file) {
         this.files.put(path, file);
         this.onFileAdded(path);
     }
 
-    protected abstract void onFileAdded(String path);
+    protected abstract void onFileAdded(final String path);
 
     protected abstract void onClear();
 

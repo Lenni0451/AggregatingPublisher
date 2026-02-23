@@ -1,3 +1,0 @@
-[19:15:53] [main/INFO] (ConfigUtils) Registered Maven aggregator
-[19:15:53] [main/INFO] (ConfigUtils) Registered Maven publisher: My Maven Publisher
-[19:15:53] [main/INFO] (WebMain) Aggregating Publisher Web UI started on port 8080

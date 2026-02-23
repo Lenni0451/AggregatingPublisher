@@ -20,6 +20,7 @@ import java.util.Objects;
 @Slf4j
 public class ConfigUtils {
 
+    @Nullable
     public static GsonObject loadConfig(File configFile) throws IOException {
         if (!configFile.exists()) {
             try (InputStream is = ConfigUtils.class.getResourceAsStream("/config.json");
@@ -37,9 +38,8 @@ public class ConfigUtils {
 
     public static void loadAggregators(final AggregatingPublisher aggregatingPublisher, final GsonObject config) {
         GsonArray aggregators = config.getArray("aggregators", new GsonArray());
-        for (GsonElement rawAggregator : aggregators) {
-            GsonObject aggregator = rawAggregator.asObject();
-            String type = aggregator.getString("type");
+        for (GsonObject aggregator : aggregators.asList(GsonElement::asObject)) {
+            String type = Objects.requireNonNull(aggregator.getString("type"), "Aggregator type is missing");
             if ("maven".equalsIgnoreCase(type)) {
                 aggregatingPublisher.registerAggregator(new MavenAggregator());
                 log.info("Registered Maven aggregator");
@@ -72,7 +72,7 @@ public class ConfigUtils {
 
     private static Authentication parseAuthentication(@Nullable final GsonObject auth) {
         if (auth == null) return null;
-        String type = auth.getString("type");
+        String type = Objects.requireNonNull(auth.getString("type"), "Auth type is missing");
         if ("basic".equalsIgnoreCase(type)) {
             String username = Objects.requireNonNull(auth.getString("username"), "Username is missing");
             String password = Objects.requireNonNull(auth.getString("password"), "Password is missing");
