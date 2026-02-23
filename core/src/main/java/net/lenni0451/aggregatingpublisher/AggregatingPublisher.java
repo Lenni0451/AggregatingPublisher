@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 @Slf4j
 public class AggregatingPublisher {
@@ -21,12 +22,21 @@ public class AggregatingPublisher {
     private final List<PublisherService> publisherServices;
     private final List<DeploymentManagerService> deploymentManagerServices;
     private boolean started = false;
+    private Predicate<String> authenticator = authHeader -> true;
 
     public AggregatingPublisher(final String bindAddress, final int bindPort) throws IOException {
         this.webServer = new WebServer(bindAddress, bindPort);
         this.aggregatorServices = new ArrayList<>();
         this.publisherServices = new ArrayList<>();
         this.deploymentManagerServices = new ArrayList<>();
+    }
+
+    public void setAuthenticator(final Predicate<String> authenticator) {
+        this.authenticator = authenticator;
+    }
+
+    public boolean checkAuth(final String authHeader) {
+        return this.authenticator.test(authHeader);
     }
 
     public AggregatingPublisher registerAggregator(final AggregatorService service) {

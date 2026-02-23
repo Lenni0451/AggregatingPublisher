@@ -13,3 +13,4 @@ rootProject.name = "AggregatingPublisher"
 
 include(":core")
 include(":swingui")
+include(":webui")

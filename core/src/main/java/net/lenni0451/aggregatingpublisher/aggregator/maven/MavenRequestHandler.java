@@ -22,6 +22,11 @@ public class MavenRequestHandler extends RequestHandler {
         path = path.substring(path.indexOf("/") + 1); //Cut off /maven/
 
         if (request.method().equalsIgnoreCase("PUT")) {
+            String auth = request.headers().containsKey("Authorization") ? request.headers().get("Authorization").get(0) : null;
+            if (!this.aggregator.getAggregatingPublisher().checkAuth(auth)) {
+                return ResponseInfo.of(401, "Unauthorized");
+            }
+
             if (path.endsWith("/")) {
                 log.warn("Maven PUT request with trailing slash: {}", path);
                 return ResponseInfo.notFound();

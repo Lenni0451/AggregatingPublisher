@@ -1,12 +1,12 @@
 plugins {
     id "java"
     id "project.defaults"
+    id "base.application"
     alias libs.plugins.classTokenReplacer
 }
 
 dependencies {
-    include libs.log4j
-    include libs.commons.httpclient
+    include project(":core")
     include libs.commons.gson
     include libs.gson
 }

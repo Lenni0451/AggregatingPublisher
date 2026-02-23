@@ -1,32 +1,18 @@
 package net.lenni0451.aggregatingpublisher.swingui;
 
-import net.lenni0451.aggregatingpublisher.services.DeploymentManagerService;
+import net.lenni0451.aggregatingpublisher.services.AbstractFileCollector;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+public class FileCollector extends AbstractFileCollector {
 
-public class FileCollector implements DeploymentManagerService {
-
-    private final Map<String, byte[]> files = new ConcurrentHashMap<>();
-
-    public Map<String, byte[]> getFiles() {
-        return Map.copyOf(this.files);
-    }
-
-    public boolean isEmpty() {
-        return this.files.isEmpty();
-    }
-
-    public void clearFiles() {
-        this.files.clear();
-        Window.clearFiles();
+    @Override
+    protected void onFileAdded(String path) {
+        if (this.files.size() == 1) Window.open();
+        Window.addFile(path);
     }
 
     @Override
-    public void aggregateFile(String path, byte[] file) {
-        if (this.files.isEmpty()) Window.open();
-        this.files.put(path, file);
-        Window.addFile(path);
+    protected void onClear() {
+        Window.clearFiles();
     }
 
 }
