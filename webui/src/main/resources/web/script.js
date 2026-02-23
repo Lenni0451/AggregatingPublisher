@@ -1,3 +1,5 @@
+let artifactCount = 0;
+
 document.addEventListener('DOMContentLoaded', () => {
     const path = window.location.pathname;
 
@@ -70,21 +72,34 @@ async function loadArtifacts() {
     const list = document.getElementById('artifacts-list');
     try {
         const artifacts = await fetchJson('/api/artifacts');
+        artifactCount = artifacts.length;
 
         if (artifacts.length === 0) {
             list.innerHTML = '<li>No artifacts aggregated yet.</li>';
-            return;
+        } else {
+            list.innerHTML = '';
+            artifacts.forEach(artifact => {
+                const li = document.createElement('li');
+                li.textContent = artifact;
+                list.appendChild(li);
+            });
         }
-
-        list.innerHTML = '';
-        artifacts.forEach(artifact => {
-            const li = document.createElement('li');
-            li.textContent = artifact;
-            list.appendChild(li);
-        });
+        updatePublishButtons();
     } catch (error) {
         console.error('Failed to load artifacts', error);
     }
+}
+
+function updatePublishButtons() {
+    const clearBtn = document.getElementById('clear-artifacts-btn');
+    if (clearBtn) clearBtn.disabled = artifactCount === 0;
+
+    const buttons = document.querySelectorAll('#publishers-list .publisher-card button');
+    buttons.forEach(button => {
+        if (!button.textContent.includes('%') && !button.textContent.includes('Starting')) {
+            button.disabled = artifactCount === 0;
+        }
+    });
 }
 
 async function clearArtifacts() {
@@ -124,6 +139,7 @@ async function loadPublishers() {
             const button = document.createElement('button');
             button.textContent = 'Publish';
             button.onclick = () => startPublish(name, button);
+            button.disabled = artifactCount === 0;
             card.appendChild(button);
 
             container.appendChild(card);
@@ -147,13 +163,13 @@ async function startPublish(publisherName, button) {
         });
 
         const taskId = response.taskId;
-        pollProgress(taskId, button, originalText);
+        pollProgress(taskId, button, originalText, publisherName);
 
     } catch (error) {
         console.error('Publish failed', error);
         showNotification(`Failed to start publishing to ${publisherName}: ${error.message}`, 'error');
-        button.disabled = false;
         button.textContent = originalText;
+        updatePublishButtons();
     }
 }
 
@@ -164,8 +180,8 @@ async function pollProgress(taskId, button, originalText, publisherName) {
 
             if (task.completed) {
                 clearInterval(interval);
-                button.disabled = false;
                 button.textContent = originalText;
+                updatePublishButtons();
 
                 if (task.success) {
                     showNotification(`Successfully published to ${publisherName}`, 'success');
@@ -184,8 +200,8 @@ async function pollProgress(taskId, button, originalText, publisherName) {
             console.error('Progress poll failed', error);
             clearInterval(interval);
             showNotification(`Error polling progress for ${publisherName}: ${error.message}`, 'error');
-            button.disabled = false;
             button.textContent = originalText;
+            updatePublishButtons();
         }
     }, 500);
 }
