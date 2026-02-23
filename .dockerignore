@@ -1,0 +1,20 @@
+# Ignore project management and unrelated source folders
+.git
+.gradle
+.idea
+core
+swingui
+buildSrc
+gradle
+gradlew
+gradlew.bat
+config
+
+# Ignore source folders to keep build context small
+**/src
+# Ignore build outputs except the JAR we need
+**/build/classes
+**/build/generated
+**/build/resources
+**/build/tmp
+**/build/reports

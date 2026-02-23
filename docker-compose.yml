@@ -1,0 +1,9 @@
+services:
+  aggregating-publisher-webui:
+    build: .
+    container_name: aggregating-publisher-webui
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app
+    restart: unless-stopped
