@@ -77,6 +77,11 @@ public class WebInterfaceHandler extends RequestHandler {
             return handlePublishers();
         }
 
+        if (path.equals("/api/clear") && request.method().equalsIgnoreCase("POST")) {
+            this.fileCollector.clearFiles();
+            return ResponseInfo.success("{\"status\":\"ok\"}");
+        }
+
         if (path.startsWith("/api/publish/")) {
             String publisherName = path.substring(13); // Remove /api/publish/
             return handlePublish(publisherName);

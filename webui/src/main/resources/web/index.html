@@ -14,20 +14,25 @@
         </header>
 
         <main>
-            <section class="artifacts-section">
-                <h2>Published Artifacts</h2>
-                <ul id="artifacts-list">
-                    <li>Loading...</li>
-                </ul>
-            </section>
-
             <section class="publish-section">
                 <h2>Publish To</h2>
                 <div id="publishers-list" class="publishers-grid">
                     <!-- Publishers will be loaded here -->
                 </div>
             </section>
+
+            <section class="artifacts-section">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>Published Artifacts</h2>
+                    <button id="clear-artifacts-btn" onclick="clearArtifacts()">Clear</button>
+                </div>
+                <ul id="artifacts-list">
+                    <li>Loading...</li>
+                </ul>
+            </section>
         </main>
+
+        <div id="notification-area"></div>
 
         <footer>
             <p>Aggregating Publisher Web UI</p>

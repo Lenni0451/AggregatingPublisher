@@ -48,6 +48,24 @@ async function initDashboard() {
     setInterval(loadArtifacts, 5000);
 }
 
+function showNotification(message, type = 'info') {
+    const container = document.getElementById('notification-area');
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+
+    const content = document.createElement('span');
+    content.textContent = message;
+    notification.appendChild(content);
+
+    const closeBtn = document.createElement('span');
+    closeBtn.className = 'notification-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => notification.remove();
+    notification.appendChild(closeBtn);
+
+    container.appendChild(notification);
+}
+
 async function loadArtifacts() {
     const list = document.getElementById('artifacts-list');
     try {
@@ -66,7 +84,21 @@ async function loadArtifacts() {
         });
     } catch (error) {
         console.error('Failed to load artifacts', error);
-        // list.innerHTML = '<li>Error loading artifacts.</li>';
+    }
+}
+
+async function clearArtifacts() {
+    if (!confirm('Are you sure you want to clear all aggregated artifacts?')) {
+        return;
+    }
+
+    try {
+        await fetchJson('/api/clear', { method: 'POST' });
+        showNotification('Artifacts cleared successfully', 'success');
+        loadArtifacts();
+    } catch (error) {
+        console.error('Failed to clear artifacts', error);
+        showNotification('Failed to clear artifacts: ' + error.message, 'error');
     }
 }
 
@@ -119,30 +151,27 @@ async function startPublish(publisherName, button) {
 
     } catch (error) {
         console.error('Publish failed', error);
-        button.textContent = 'Error';
-        setTimeout(() => {
-            button.disabled = false;
-            button.textContent = originalText;
-        }, 2000);
+        showNotification(`Failed to start publishing to ${publisherName}: ${error.message}`, 'error');
+        button.disabled = false;
+        button.textContent = originalText;
     }
 }
 
-async function pollProgress(taskId, button, originalText) {
+async function pollProgress(taskId, button, originalText, publisherName) {
     const interval = setInterval(async () => {
         try {
             const task = await fetchJson(`/api/progress/${taskId}`);
 
             if (task.completed) {
                 clearInterval(interval);
+                button.disabled = false;
+                button.textContent = originalText;
+
                 if (task.success) {
-                    button.textContent = 'Done!';
+                    showNotification(`Successfully published to ${publisherName}`, 'success');
                 } else {
-                    button.textContent = 'Failed: ' + (task.error || 'Unknown error');
+                    showNotification(`Failed to publish to ${publisherName}: ${task.error || 'Unknown error'}`, 'error');
                 }
-                setTimeout(() => {
-                    button.disabled = false;
-                    button.textContent = originalText;
-                }, 3000);
             } else {
                 if (task.totalSteps <= 1) {
                     button.textContent = `${(task.progress * 100).toFixed(1)}%`;
@@ -154,11 +183,9 @@ async function pollProgress(taskId, button, originalText) {
         } catch (error) {
             console.error('Progress poll failed', error);
             clearInterval(interval);
-            button.textContent = 'Error';
-            setTimeout(() => {
-                button.disabled = false;
-                button.textContent = originalText;
-            }, 2000);
+            showNotification(`Error polling progress for ${publisherName}: ${error.message}`, 'error');
+            button.disabled = false;
+            button.textContent = originalText;
         }
     }, 500);
 }

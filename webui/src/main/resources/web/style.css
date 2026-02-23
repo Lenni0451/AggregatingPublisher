@@ -44,6 +44,10 @@ button {
     transition: background-color 0.2s;
 }
 
+button.full-width {
+    width: 100%;
+}
+
 button:hover {
     background-color: #0056b3;
 }
@@ -88,6 +92,8 @@ button:disabled {
     padding: 15px;
     text-align: center;
     background-color: var(--background-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .publisher-card h3 {
@@ -103,6 +109,10 @@ button:disabled {
     border: 1px solid var(--border-color);
     border-radius: 8px;
     text-align: center;
+}
+
+.login-container button {
+    width: 100%;
 }
 
 .form-group {
@@ -127,6 +137,47 @@ button:disabled {
     color: red;
     margin-bottom: 15px;
     display: none;
+}
+
+#notification-area {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 350px;
+    z-index: 1000;
+}
+
+.notification {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 15px;
+    margin-bottom: 10px;
+    position: relative;
+    animation: slideIn 0.3s ease-out;
+}
+
+.notification.success {
+    border-left: 4px solid #28a745;
+}
+
+.notification.error {
+    border-left: 4px solid #dc3545;
+}
+
+.notification-close {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    cursor: pointer;
+    color: #6c757d;
+    font-weight: bold;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
 }
 
 footer {
