@@ -1,0 +1,47 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Prepare Release Artifacts
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          mkdir -p artifacts
+          # Find the main JAR and copy it with a more descriptive name including the tag
+          # Specifically avoid sources and javadoc jars
+          find swingui/build/libs/ -name "AggregatingPublisher-*.jar" -not -name "*-sources.jar" -not -name "*-javadoc.jar" -type f -exec cp {} artifacts/AggregatingPublisher-SwingUI-${TAG_NAME}.jar \;
+          find webui/build/libs/ -name "AggregatingPublisher-*.jar" -not -name "*-sources.jar" -not -name "*-javadoc.jar" -type f -exec cp {} artifacts/AggregatingPublisher-WebUI-${TAG_NAME}.jar \;
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/AggregatingPublisher-SwingUI-*.jar
+            artifacts/AggregatingPublisher-WebUI-*.jar
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
