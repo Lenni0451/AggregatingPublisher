@@ -1,7 +1,7 @@
 services:
   aggregating-publisher-webui:
-    build: .
-    container_name: aggregating-publisher-webui
+    image: ghcr.io/lenni0451/aggregatingpublisher:latest
+    container_name: aggregating-publisher
     ports:
       - "8080:8080"
     volumes:
