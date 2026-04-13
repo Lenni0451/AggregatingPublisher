@@ -35,7 +35,7 @@ jobs:
           find webui/build/libs/ -name "AggregatingPublisher-*.jar" -not -name "*-sources.jar" -not -name "*-javadoc.jar" -type f -exec cp {} artifacts/AggregatingPublisher-WebUI-${TAG_NAME}.jar \;
 
       - name: Create Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             artifacts/AggregatingPublisher-SwingUI-*.jar
