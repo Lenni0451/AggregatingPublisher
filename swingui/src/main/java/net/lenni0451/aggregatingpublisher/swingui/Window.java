@@ -14,27 +14,27 @@ import java.util.concurrent.Executors;
 @Slf4j
 public class Window extends JFrame {
 
-    private static final Window instance;
+    private static final Window INSTANCE;
 
     static {
         SwingTheming.setSystemLookAndFeel();
-        instance = new Window();
+        INSTANCE = new Window();
     }
 
     public static void open() {
-        SwingUtilities.invokeLater(() -> instance.setVisible(true));
+        SwingUtilities.invokeLater(() -> INSTANCE.setVisible(true));
     }
 
     public static void addFile(final String path) {
         SwingUtilities.invokeLater(() -> {
-            DefaultListModel<String> model = (DefaultListModel<String>) instance.filesList.getModel();
+            DefaultListModel<String> model = (DefaultListModel<String>) INSTANCE.filesList.getModel();
             model.addElement(path);
         });
     }
 
     public static void clearFiles() {
         SwingUtilities.invokeLater(() -> {
-            DefaultListModel<String> model = (DefaultListModel<String>) instance.filesList.getModel();
+            DefaultListModel<String> model = (DefaultListModel<String>) INSTANCE.filesList.getModel();
             model.clear();
         });
     }

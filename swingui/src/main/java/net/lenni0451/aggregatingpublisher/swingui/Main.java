@@ -11,13 +11,13 @@ import java.io.File;
 @Slf4j
 public class Main {
 
-    private static final File configFile = new File("config.json");
+    private static final File CONFIG_FILE = new File("config.json");
     public static AggregatingPublisher aggregatingPublisher;
     public static FileCollector fileCollector;
 
     public static void main(String[] args) {
         try {
-            GsonObject config = ConfigUtils.loadConfig(configFile);
+            GsonObject config = ConfigUtils.loadConfig(CONFIG_FILE);
             if (config == null) {
                 Popup.show("Config file created.\nPlease configure the settings and restart the application.", JOptionPane.INFORMATION_MESSAGE);
                 return;

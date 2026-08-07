@@ -12,13 +12,13 @@ import java.util.Objects;
 @Slf4j
 public class WebMain {
 
-    private static final File configFile = new File("config.json");
+    private static final File CONFIG_FILE = new File("config.json");
     public static AggregatingPublisher aggregatingPublisher;
     public static WebFileCollector fileCollector;
 
     public static void main(String[] args) {
         try {
-            GsonObject config = ConfigUtils.loadConfig(configFile);
+            GsonObject config = ConfigUtils.loadConfig(CONFIG_FILE);
             if (config == null) {
                 log.info("Config file created. Please configure the settings and restart the application.");
                 return;
