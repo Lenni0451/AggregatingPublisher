@@ -1,12 +1,17 @@
 package net.lenni0451.aggregatingpublisher.auth;
 
+import lombok.RequiredArgsConstructor;
 import net.lenni0451.commons.httpclient.HeaderStore;
 import net.lenni0451.commons.httpclient.constants.HttpHeaders;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-public record BasicAuth(String username, String password) implements Authentication {
+@RequiredArgsConstructor
+public class BasicAuth implements Authentication {
+
+    private final String username;
+    private final String password;
 
     @Override
     public void apply(HeaderStore<?> headers) {

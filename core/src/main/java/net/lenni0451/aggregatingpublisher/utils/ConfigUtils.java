@@ -8,6 +8,7 @@ import net.lenni0451.aggregatingpublisher.auth.BasicAuth;
 import net.lenni0451.aggregatingpublisher.auth.TokenAuth;
 import net.lenni0451.aggregatingpublisher.publisher.maven.MavenPublisher;
 import net.lenni0451.aggregatingpublisher.publisher.sonatype.SonatypePublisher;
+import net.lenni0451.aggregatingpublisher.services.GradlePropertiesAuthenticator;
 import net.lenni0451.commons.gson.GsonParser;
 import net.lenni0451.commons.gson.elements.GsonArray;
 import net.lenni0451.commons.gson.elements.GsonElement;
@@ -80,6 +81,19 @@ public class ConfigUtils {
         } else if ("token".equalsIgnoreCase(type)) {
             String token = Objects.requireNonNull(auth.getString("token"), "Token is missing");
             return new TokenAuth(token);
+        } else if ("gradle".equalsIgnoreCase(type)) {
+            String usernameKey = Objects.requireNonNull(auth.getString("usernameKey"), "usernameKey is missing");
+            String passwordKey = Objects.requireNonNull(auth.getString("passwordKey"), "passwordKey is missing");
+            String file = auth.getString("file");
+            try {
+                if (file != null) {
+                    return new GradlePropertiesAuthenticator(new File(file), usernameKey, passwordKey);
+                } else {
+                    return new GradlePropertiesAuthenticator(usernameKey, passwordKey);
+                }
+            } catch (IOException e) {
+                throw new IllegalStateException("Failed to load gradle.properties", e);
+            }
         } else {
             throw new IllegalArgumentException("Unknown authentication type: " + type);
         }
