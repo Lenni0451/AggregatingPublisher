@@ -112,10 +112,10 @@ public class MavenLocalPublisher implements PublisherService {
     private void updateMetadata(final Map<String, byte[]> files, final String metadataPath, final String metadata) {
         byte[] incrementedMetadataByte = metadata.getBytes(StandardCharsets.UTF_8);
         files.put(metadataPath, incrementedMetadataByte);
-//        files.put(metadataPath + ".md5", HashUtils.md5(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
-//        files.put(metadataPath + ".sha1", HashUtils.sha1(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
-//        files.put(metadataPath + ".sha256", HashUtils.sha256(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
-//        files.put(metadataPath + ".sha512", HashUtils.sha512(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
+        // files.put(metadataPath + ".md5", HashUtils.md5(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
+        // files.put(metadataPath + ".sha1", HashUtils.sha1(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
+        // files.put(metadataPath + ".sha256", HashUtils.sha256(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
+        // files.put(metadataPath + ".sha512", HashUtils.sha512(incrementedMetadataByte).getBytes(StandardCharsets.UTF_8));
     }
 
 }
