@@ -6,6 +6,7 @@ import net.lenni0451.aggregatingpublisher.aggregator.maven.MavenAggregator;
 import net.lenni0451.aggregatingpublisher.auth.Authentication;
 import net.lenni0451.aggregatingpublisher.auth.BasicAuth;
 import net.lenni0451.aggregatingpublisher.auth.TokenAuth;
+import net.lenni0451.aggregatingpublisher.publisher.maven.MavenLocalPublisher;
 import net.lenni0451.aggregatingpublisher.publisher.maven.MavenPublisher;
 import net.lenni0451.aggregatingpublisher.publisher.sonatype.SonatypePublisher;
 import net.lenni0451.aggregatingpublisher.services.GradlePropertiesAuthenticator;
@@ -65,6 +66,11 @@ public class ConfigUtils {
                 Authentication auth = Objects.requireNonNull(parseAuthentication(authentication), "Sonatype publisher authentication is missing");
                 aggregatingPublisher.registerPublisher(new SonatypePublisher(name, auth));
                 log.info("Registered Sonatype publisher: {}", name);
+            } else if ("mavenLocal".equalsIgnoreCase(type)) {
+                String path = publisher.getString("path");
+                File directory = path == null ? null : new File(path);
+                aggregatingPublisher.registerPublisher(new MavenLocalPublisher(name, directory));
+                log.info("Registered Maven Local publisher: {}", name);
             } else {
                 throw new IllegalArgumentException("Unknown publisher type: " + type);
             }
