@@ -33,6 +33,7 @@ public class WebMain {
             aggregatingPublisher.getWebServer().registerHandler("/", new WebInterfaceHandler(username, password, fileCollector, aggregatingPublisher));
             ConfigUtils.loadAggregators(aggregatingPublisher, config);
             ConfigUtils.loadPublishers(aggregatingPublisher, config);
+            ConfigUtils.loadSigning(aggregatingPublisher, config);
             aggregatingPublisher.start();
             log.info("Aggregating Publisher Web UI started on port {}", config.getInt("bindPort", 8080));
         } catch (Throwable t) {

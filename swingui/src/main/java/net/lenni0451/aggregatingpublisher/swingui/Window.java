@@ -81,6 +81,15 @@ public class Window extends JFrame {
                         button.setEnabled(false);
                         this.executorService.execute(() -> {
                             try {
+                                Main.aggregatingPublisher.signArtifacts(Main.fileCollector.getFiles(), (progress, step, totalSteps) -> {
+                                    SwingUtilities.invokeLater(() -> {
+                                        if (totalSteps == 1) {
+                                            button.setText(String.format("Signing %.1f%%", progress * 100));
+                                        } else {
+                                            button.setText(String.format("Signing %.1f%% %s/%s", progress * 100, step, totalSteps));
+                                        }
+                                    });
+                                });
                                 publisherService.publish(Main.fileCollector.getFiles(), (progress, step, totalSteps) -> {
                                     SwingUtilities.invokeLater(() -> {
                                         if (totalSteps == 1) {

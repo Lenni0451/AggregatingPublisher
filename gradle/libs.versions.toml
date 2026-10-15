@@ -1,5 +1,6 @@
 [versions]
 commons = "1.9.2"
+bouncyCastle = "1.86"
 
 [libraries]
 findbugs = { module = "com.google.code.findbugs:jsr305", version = "3.0.2" }
@@ -15,6 +16,9 @@ junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher
 commons-swing = { module = "net.lenni0451.commons:swing", version.ref = "commons" }
 commons-gson = { module = "net.lenni0451.commons:gson", version.ref = "commons" }
 commons-httpclient = { module = "net.lenni0451.commons:httpclient", version.ref = "commons" }
+
+bcpg = { module = "org.bouncycastle:bcpg-jdk18on", version.ref = "bouncyCastle" }
+bcutil = { module = "org.bouncycastle:bcutil-jdk18on", version.ref = "bouncyCastle" }
 
 [bundles]
 

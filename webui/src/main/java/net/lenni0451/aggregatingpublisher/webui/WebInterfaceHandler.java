@@ -170,6 +170,11 @@ public class WebInterfaceHandler extends RequestHandler {
         this.tasks.put(taskId, task);
         this.executorService.submit(() -> {
             try {
+                this.publisher.signArtifacts(this.fileCollector.getFiles(), (progress, step, totalSteps) -> {
+                    task.progress = progress;
+                    task.step = step;
+                    task.totalSteps = totalSteps;
+                });
                 target.publish(this.fileCollector.getFiles(), (progress, step, totalSteps) -> {
                     task.progress = progress;
                     task.step = step;

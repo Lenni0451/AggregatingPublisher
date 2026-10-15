@@ -2,16 +2,17 @@ package net.lenni0451.aggregatingpublisher;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.lenni0451.aggregatingpublisher.services.AggregatorService;
-import net.lenni0451.aggregatingpublisher.services.AuthenticationService;
-import net.lenni0451.aggregatingpublisher.services.DeploymentManagerService;
-import net.lenni0451.aggregatingpublisher.services.PublisherService;
+import net.lenni0451.aggregatingpublisher.services.*;
+import net.lenni0451.aggregatingpublisher.signing.SigningUtils;
+import net.lenni0451.aggregatingpublisher.utils.ProgressConsumer;
 import net.lenni0451.aggregatingpublisher.web.WebServer;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class AggregatingPublisher {
@@ -22,6 +23,8 @@ public class AggregatingPublisher {
     private final List<PublisherService> publisherServices = new ArrayList<>();
     private final List<DeploymentManagerService> deploymentManagerServices = new ArrayList<>();
     private final List<AuthenticationService> authenticationServices = new ArrayList<>();
+    @Getter
+    private SigningService signingService;
     private boolean started = false;
 
     public AggregatingPublisher(final String bindAddress, final int bindPort) throws IOException {
@@ -57,6 +60,13 @@ public class AggregatingPublisher {
         return this;
     }
 
+    public AggregatingPublisher registerSigning(final SigningService service) {
+        if (this.started) throw new IllegalStateException("Cannot register signing service after starting");
+        service.load(this);
+        this.signingService = service;
+        return this;
+    }
+
     public void start() {
         if (this.aggregatorServices.isEmpty()) throw new IllegalStateException("No aggregator services registered");
         if (this.publisherServices.isEmpty()) throw new IllegalStateException("No publisher services registered");
@@ -84,6 +94,14 @@ public class AggregatingPublisher {
     public void aggregateFile(final String name, final byte[] data) {
         for (DeploymentManagerService service : this.deploymentManagerServices) {
             service.aggregateFile(name, data);
+        }
+    }
+
+    public void signArtifacts(final Map<String, byte[]> files, @Nullable final ProgressConsumer progressConsumer) throws Exception {
+        if (this.signingService == null) return;
+        Map<String, byte[]> signedFiles = SigningUtils.signFiles(this.signingService, files, progressConsumer);
+        for (Map.Entry<String, byte[]> entry : signedFiles.entrySet()) {
+            this.aggregateFile(entry.getKey(), entry.getValue());
         }
     }
 

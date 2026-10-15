@@ -29,6 +29,7 @@ public class Main {
             aggregatingPublisher.registerDeploymentManagement(fileCollector);
             ConfigUtils.loadAggregators(aggregatingPublisher, config);
             ConfigUtils.loadPublishers(aggregatingPublisher, config);
+            ConfigUtils.loadSigning(aggregatingPublisher, config);
             aggregatingPublisher.start();
         } catch (Throwable t) {
             log.error("An error occurred while starting the application", t);

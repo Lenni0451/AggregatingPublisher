@@ -9,4 +9,6 @@ dependencies {
     include libs.commons.httpclient
     include libs.commons.gson
     include libs.gson
+    include libs.bcpg
+    include libs.bcutil
 }
