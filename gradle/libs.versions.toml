@@ -1,6 +1,6 @@
 [versions]
 commons = "1.9.2"
-bouncyCastle = "1.86"
+bouncyCastle = "1.87"
 
 [libraries]
 findbugs = { module = "com.google.code.findbugs:jsr305", version = "3.0.2" }
